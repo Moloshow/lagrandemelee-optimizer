@@ -62,8 +62,6 @@ API_COOKIES=_ga=GA1.1...; __stripe_mid=...; ...
 API_ACCESS_KEY=740@16.17@@d50f0d9f-...
 ```
 
-> **Note** : Le fichier `.env` est ignore par git et ne sera jamais pousse.
-
 ---
 
 ## Utilisation
@@ -74,18 +72,19 @@ API_ACCESS_KEY=740@16.17@@d50f0d9f-...
 python main.py --budget 300 --inclure-remplacants
 ```
 
-Cette commande execute les 4 etapes automatiquement :
-1. Scrape les joueurs depuis l'API Fantasy
-2. Scrape les compositions depuis AllRugby
-3. Calcule les scores predictifs
-4. Optimise la composition (18 joueurs)
+Cette commande execute les 5 etapes automatiquement :
+1. Scraping des joueurs depuis l'API Fantasy
+2. Scraping des compositions depuis AllRugby
+3. Mise a jour du classement et forme des equipes
+4. Calcul des scores predictifs
+5. Optimisation de la composition (18 joueurs)
 
 ### Options disponibles
 
 | Option | Description |
 |--------|-------------|
 | `--budget` | Budget en millions (defaut: 300) |
-| `--url-compos` | URL des compositions AllRugby (si non trouvee auto) |
+| `--url-compos` | URL des compositions AllRugby |
 | `--skip-scrape` | Utiliser les donnees existantes sans re-scraper |
 | `--inclure-remplacants` | Inclure les remplacants reels dans la pool |
 
@@ -95,20 +94,8 @@ Cette commande execute les 4 etapes automatiquement :
 # Budget personnalise
 python main.py --budget 250
 
-# Avec URL specifique des compositions
-python main.py --url-compos "https://www.allrugby.com/news/top-14-2026-j13-compos-3447.html"
-
 # Re-run rapide (sans re-scraper)
 python main.py --skip-scrape --inclure-remplacants
-```
-
-### Scripts individuels
-
-```bash
-python scrape_joueurs.py         # Scrape API Fantasy
-python scrape_compos.py [URL]    # Scrape compositions AllRugby
-python score_predictif.py        # Calcule les scores predictifs
-python optimiseur_compo.py       # Optimise la composition
 ```
 
 ---
@@ -122,9 +109,9 @@ python optimiseur_compo.py       # Optimise la composition
 | `main.py` | Pipeline principal - orchestre toutes les etapes |
 | `scrape_joueurs.py` | Scrape les joueurs depuis l'API Fantasy |
 | `scrape_compos.py` | Scrape les compositions officielles depuis AllRugby |
-| `scrape_classement.py` | Scrape/genere le classement Top 14 |
-| `score_predictif.py` | Calcule un score predictif pour chaque joueur |
-| `optimiseur_compo.py` | Trouve la meilleure equipe sous contrainte de budget |
+| `scrape_classement.py` | Genere le classement et forme des equipes |
+| `score_predictif.py` | Calcule le score predictif multi-facteurs |
+| `optimiseur_compo.py` | Optimise la composition (15 tit + 3 remp) |
 
 ### Fichiers de configuration
 
@@ -132,9 +119,9 @@ python optimiseur_compo.py       # Optimise la composition
 |---------|-------------|
 | `.env` | Credentials API (non versionne) |
 | `.env.example` | Template pour les credentials |
-| `classement_top14.json` | Classement actuel des equipes (non versionne) |
+| `classement_top14.json` | Classement et forme des equipes (non versionne) |
 
-### Fichiers generes (non versionnes)
+### Fichiers generes
 
 | Fichier | Description |
 |---------|-------------|
@@ -147,37 +134,23 @@ python optimiseur_compo.py       # Optimise la composition
 
 ## Mise a jour du classement
 
-Le fichier `classement_top14.json` est **genere automatiquement** par le script `scrape_classement.py`.
+Le fichier `classement_top14.json` contient le classement et la forme des equipes.
 
-### Generation automatique
+### Generation
 
 ```bash
 python scrape_classement.py
 ```
-
-Le script tente de scraper le classement depuis le web. En cas d'echec, il utilise un classement manuel integre.
 
 ### Format du fichier
 
 ```json
 {
   "date_maj": "2025-12-27",
-  "source": "scraping automatique ou manuel",
   "classement": {
-    "Pau": {"rang": 1, "points": 35},
-    "Toulouse": {"rang": 2, "points": 35},
-    "Bordeaux-Begles": {"rang": 3, "points": 31},
-    "Toulon": {"rang": 4, "points": 29},
-    "Stade francais": {"rang": 5, "points": 27},
-    "Montpellier": {"rang": 6, "points": 25},
-    "La Rochelle": {"rang": 7, "points": 24},
-    "Bayonne": {"rang": 8, "points": 23},
-    "Castres": {"rang": 9, "points": 22},
-    "Racing 92": {"rang": 10, "points": 21},
-    "Clermont": {"rang": 11, "points": 20},
-    "Lyon": {"rang": 12, "points": 18},
-    "Montauban": {"rang": 13, "points": 12},
-    "Perpignan": {"rang": 14, "points": 10}
+    "Pau": {"rang": 1, "points": 35, "forme": "P,G,G,G,G"},
+    "Toulouse": {"rang": 2, "points": 35, "forme": "G,G,G,G,G"},
+    ...
   }
 }
 ```
@@ -186,18 +159,39 @@ Le script tente de scraper le classement depuis le web. En cas d'echec, il utili
 
 - `rang` : Position au classement (1 = 1er)
 - `points` : Points au classement
-
-Le **bonus adversaire est calcule de maniere graduelle** en fonction du rang (pas de categories fixe).
+- `forme` : 5 derniers resultats (G=Gagne, N=Nul, P=Perdu)
 
 ---
 
 ## Formule de scoring
 
-Le score predictif est calcule ainsi :
+Le score predictif combine 5 facteurs :
 
 ```
-score = stat_moy x bonus_forme x bonus_domicile x bonus_adversaire
+score = stat_moy x bonus_forme_joueur x bonus_forme_equipe x bonus_domicile x bonus_adversaire
 ```
+
+### Bonus forme joueur (T/R/N)
+
+Base sur les 5 derniers matchs du joueur (poids decroissant) :
+
+| Statut | Bonus |
+|--------|-------|
+| T (Titulaire) | +8% |
+| R (Remplacant) | 0% |
+| N (Non joue) | -15% |
+
+### Bonus forme equipe (G/N/P)
+
+Base sur les 5 derniers resultats de l'equipe :
+
+| Resultat | Bonus |
+|----------|-------|
+| G (Gagne) | +5% |
+| N (Nul) | 0% |
+| P (Perdu) | -5% |
+
+Exemple : Toulouse (G,G,G,G,G) = +5% / Perpignan (P,P,P,P,G) = -4%
 
 ### Bonus domicile
 
@@ -206,32 +200,23 @@ score = stat_moy x bonus_forme x bonus_domicile x bonus_adversaire
 | Domicile | +20% |
 | Exterieur | 0% |
 
-### Bonus adversaire (graduel)
+### Bonus adversaire
 
-Calcule selon le rang de l'adversaire :
+Calcule selon le rang de l'adversaire (graduel) :
 - Rang 1 (1er) : -13% (equipe forte)
 - Rang 7-8 : 0% (neutre)
 - Rang 14 (dernier) : +13% (equipe faible)
-
-### Bonus forme
-
-Basee sur les 5 derniers matchs (poids decroissant) :
-
-| Statut | Bonus |
-|--------|-------|
-| T (Titulaire) | +8% |
-| R (Remplacant) | 0% |
-| N (Non joue) | -15% |
 
 ---
 
 ## Resultat
 
 Le script genere une composition de 18 joueurs :
-- **15 titulaires** (2 piliers, 1 talonneur, 2 deuxieme ligne, 3 troisieme ligne, 1 demi de melee, 1 ouverture, 2 centres, 2 ailiers, 1 arriere)
+
+- **15 titulaires** : 2 piliers, 1 talonneur, 2 deuxieme ligne, 3 troisieme ligne, 1 demi de melee, 1 ouverture, 2 centres, 2 ailiers, 1 arriere
 - **3 remplacants Fantasy**
 
-Avec recommandation de :
+Avec recommandations :
 - **Capitaine** : Joueur avec le meilleur score parmi les titulaires
 - **Supersub** : Joueur avec le meilleur score parmi les remplacants
 

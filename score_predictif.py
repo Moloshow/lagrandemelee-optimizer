@@ -100,9 +100,9 @@ def calculer_bonus_adversaire(rang_adversaire):
 
 # Bonus forme equipe (G=Gagne, N=Nul, P=Perdu) - Format La Grande Melee
 BONUS_FORME_EQUIPE = {
-    "G": 1.03,   # Gagne = +3%
+    "G": 1.05,   # Gagne = +5%
     "N": 1.0,    # Nul = neutre
-    "P": 0.97    # Perdu = -3%
+    "P": 0.95    # Perdu = -5%
 }
 
 

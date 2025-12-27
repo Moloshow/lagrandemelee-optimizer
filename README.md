@@ -122,6 +122,7 @@ python optimiseur_compo.py       # Optimise la composition
 | `main.py` | Pipeline principal - orchestre toutes les etapes |
 | `scrape_joueurs.py` | Scrape les joueurs depuis l'API Fantasy |
 | `scrape_compos.py` | Scrape les compositions officielles depuis AllRugby |
+| `scrape_classement.py` | Scrape/genere le classement Top 14 |
 | `score_predictif.py` | Calcule un score predictif pour chaque joueur |
 | `optimiseur_compo.py` | Trouve la meilleure equipe sous contrainte de budget |
 
@@ -146,29 +147,37 @@ python optimiseur_compo.py       # Optimise la composition
 
 ## Mise a jour du classement
 
-Le fichier `classement_top14.json` doit etre cree et mis a jour manuellement apres chaque journee.
+Le fichier `classement_top14.json` est **genere automatiquement** par le script `scrape_classement.py`.
+
+### Generation automatique
+
+```bash
+python scrape_classement.py
+```
+
+Le script tente de scraper le classement depuis le web. En cas d'echec, il utilise un classement manuel integre.
 
 ### Format du fichier
 
 ```json
 {
-  "journee": 13,
-  "date_maj": "2025-12-26",
+  "date_maj": "2025-12-27",
+  "source": "scraping automatique ou manuel",
   "classement": {
-    "Pau": {"rang": 1, "points": 35, "force": "fort"},
-    "Toulouse": {"rang": 2, "points": 33, "force": "fort"},
-    "Bordeaux-Begles": {"rang": 3, "points": 31, "force": "fort"},
-    "La Rochelle": {"rang": 4, "points": 29, "force": "fort"},
-    "Toulon": {"rang": 5, "points": 27, "force": "moyen"},
-    "Racing 92": {"rang": 6, "points": 25, "force": "moyen"},
-    "Clermont": {"rang": 7, "points": 23, "force": "moyen"},
-    "Stade francais": {"rang": 8, "points": 22, "force": "moyen"},
-    "Castres": {"rang": 9, "points": 21, "force": "moyen"},
-    "Bayonne": {"rang": 10, "points": 20, "force": "moyen"},
-    "Lyon": {"rang": 11, "points": 18, "force": "faible"},
-    "Montpellier": {"rang": 12, "points": 16, "force": "faible"},
-    "Montauban": {"rang": 13, "points": 10, "force": "faible"},
-    "Perpignan": {"rang": 14, "points": 8, "force": "faible"}
+    "Toulouse": {"rang": 1, "points": 90},
+    "Bordeaux-Begles": {"rang": 2, "points": 78},
+    "Toulon": {"rang": 3, "points": 72},
+    "Bayonne": {"rang": 4, "points": 68},
+    "Clermont": {"rang": 5, "points": 63},
+    "Castres": {"rang": 6, "points": 63},
+    "La Rochelle": {"rang": 7, "points": 62},
+    "Pau": {"rang": 8, "points": 61},
+    "Montpellier": {"rang": 9, "points": 56},
+    "Racing 92": {"rang": 10, "points": 56},
+    "Lyon": {"rang": 11, "points": 50},
+    "Stade francais": {"rang": 12, "points": 45},
+    "Perpignan": {"rang": 13, "points": 44},
+    "Montauban": {"rang": 14, "points": 36}
   }
 }
 ```
@@ -177,9 +186,8 @@ Le fichier `classement_top14.json` doit etre cree et mis a jour manuellement apr
 
 - `rang` : Position au classement (1 = 1er)
 - `points` : Points au classement
-- `force` : Categorie de force ("fort", "moyen", "faible")
 
-Le bonus adversaire est calcule de maniere graduelle en fonction du rang.
+Le **bonus adversaire est calcule de maniere graduelle** en fonction du rang (pas de categories fixe).
 
 ---
 

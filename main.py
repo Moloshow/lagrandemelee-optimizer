@@ -68,7 +68,7 @@ def main():
     if not args.skip_scrape:
         success = run_script(
             "scrape_joueurs.py",
-            description="Etape 1/4 - Scraping des joueurs depuis l'API Fantasy"
+            description="Etape 1/5 - Scraping des joueurs depuis l'API Fantasy"
         )
         if not success:
             print("[ERREUR] Pipeline interrompu a l'etape 1")
@@ -85,7 +85,7 @@ def main():
         success = run_script(
             "scrape_compos.py",
             args=compo_args if compo_args else None,
-            description="Etape 2/4 - Scraping des compositions AllRugby"
+            description="Etape 2/5 - Scraping des compositions AllRugby"
         )
         if not success:
             print("[ERREUR] Pipeline interrompu a l'etape 2")
@@ -93,16 +93,27 @@ def main():
     else:
         print("\n[SKIP] Etape 2 ignoree (--skip-scrape)")
     
-    # Etape 3: Calculer les scores predictifs
+    # Etape 3: Scraper/Mettre a jour le classement Top 14
+    if not args.skip_scrape:
+        success = run_script(
+            "scrape_classement.py",
+            description="Etape 3/5 - Mise a jour du classement Top 14"
+        )
+        if not success:
+            print("[WARN] Classement non mis a jour, utilisation du fichier existant")
+    else:
+        print("\n[SKIP] Etape 3 ignoree (--skip-scrape)")
+    
+    # Etape 4: Calculer les scores predictifs
     success = run_script(
         "score_predictif.py",
-        description="Etape 3/4 - Calcul des scores predictifs"
+        description="Etape 4/5 - Calcul des scores predictifs"
     )
     if not success:
-        print("[ERREUR] Pipeline interrompu a l'etape 3")
+        print("[ERREUR] Pipeline interrompu a l'etape 4")
         return 1
     
-    # Etape 4: Optimiser la composition
+    # Etape 5: Optimiser la composition
     optim_args = ["--budget", str(args.budget)]
     if args.inclure_remplacants:
         optim_args.append("--remplacants")
@@ -110,10 +121,10 @@ def main():
     success = run_script(
         "optimiseur_compo.py",
         args=optim_args,
-        description="Etape 4/4 - Optimisation de la composition"
+        description="Etape 5/5 - Optimisation de la composition"
     )
     if not success:
-        print("[ERREUR] Pipeline interrompu a l'etape 4")
+        print("[ERREUR] Pipeline interrompu a l'etape 5")
         return 1
     
     # Resume final

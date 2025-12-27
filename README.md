@@ -136,30 +136,29 @@ python main.py --skip-scrape --inclure-remplacants
 
 Le fichier `classement_top14.json` contient le classement et la forme des equipes.
 
-### Generation
+### Generation automatique
 
 ```bash
 python scrape_classement.py
 ```
+
+Le script recupere **automatiquement** la forme des equipes via l'API La Grande Melee :
+- Endpoint : `/v1/private/journeecalendrier/{journee}`
+- Extrait `formeclubdom` et `formeclubext` pour chaque match
+- Fallback sur donnees manuelles si l'API n'est pas disponible
 
 ### Format du fichier
 
 ```json
 {
   "date_maj": "2025-12-27",
+  "source": "API La Grande Melee",
   "classement": {
     "Pau": {"rang": 1, "points": 35, "forme": "P,G,G,G,G"},
-    "Toulouse": {"rang": 2, "points": 35, "forme": "G,G,G,G,G"},
-    ...
+    "Toulouse": {"rang": 2, "points": 35, "forme": "G,G,G,G,G"}
   }
 }
 ```
-
-### Champs
-
-- `rang` : Position au classement (1 = 1er)
-- `points` : Points au classement
-- `forme` : 5 derniers resultats (G=Gagne, N=Nul, P=Perdu)
 
 ---
 

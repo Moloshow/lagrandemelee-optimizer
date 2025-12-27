@@ -118,22 +118,24 @@ def scraper_classement_lnr():
 def creer_classement_manuel():
     """Cree un classement manuel si le scraping echoue.
     Classement Top 14 2025-2026 - Journee 13 (decembre 2025)
+    forme = 5 derniers resultats (G=Gagne, N=Nul, P=Perdu) du plus ancien au plus recent
+    Donnees extraites de La Grande Melee
     """
     return {
-        "Pau": {"rang": 1, "points": 35},
-        "Toulouse": {"rang": 2, "points": 35},
-        "Bordeaux-Begles": {"rang": 3, "points": 31},
-        "Toulon": {"rang": 4, "points": 29},
-        "Stade francais": {"rang": 5, "points": 27},
-        "Montpellier": {"rang": 6, "points": 25},
-        "La Rochelle": {"rang": 7, "points": 24},
-        "Bayonne": {"rang": 8, "points": 23},
-        "Castres": {"rang": 9, "points": 22},
-        "Racing 92": {"rang": 10, "points": 21},
-        "Clermont": {"rang": 11, "points": 20},
-        "Lyon": {"rang": 12, "points": 18},
-        "Montauban": {"rang": 13, "points": 12},
-        "Perpignan": {"rang": 14, "points": 10},
+        "Pau": {"rang": 1, "points": 35, "forme": "P,G,G,G,G"},
+        "Toulouse": {"rang": 2, "points": 35, "forme": "G,G,G,G,G"},
+        "Bordeaux-Begles": {"rang": 3, "points": 31, "forme": "G,G,P,P,G"},
+        "Toulon": {"rang": 4, "points": 29, "forme": "G,G,P,G,P"},
+        "Stade francais": {"rang": 5, "points": 27, "forme": "G,P,G,P,N"},
+        "Montpellier": {"rang": 6, "points": 25, "forme": "P,P,G,G,G"},
+        "La Rochelle": {"rang": 7, "points": 24, "forme": "G,P,P,P,G"},
+        "Bayonne": {"rang": 8, "points": 23, "forme": "P,G,P,G,P"},
+        "Castres": {"rang": 9, "points": 22, "forme": "P,P,G,G,P"},
+        "Racing 92": {"rang": 10, "points": 21, "forme": "G,P,G,P,N"},
+        "Clermont": {"rang": 11, "points": 20, "forme": "G,G,P,G,P"},
+        "Lyon": {"rang": 12, "points": 18, "forme": "P,P,G,P,P"},
+        "Montauban": {"rang": 13, "points": 12, "forme": "G,P,P,P,P"},
+        "Perpignan": {"rang": 14, "points": 10, "forme": "P,P,P,P,G"},
     }
 
 

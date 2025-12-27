@@ -164,20 +164,20 @@ Le script tente de scraper le classement depuis le web. En cas d'echec, il utili
   "date_maj": "2025-12-27",
   "source": "scraping automatique ou manuel",
   "classement": {
-    "Toulouse": {"rang": 1, "points": 90},
-    "Bordeaux-Begles": {"rang": 2, "points": 78},
-    "Toulon": {"rang": 3, "points": 72},
-    "Bayonne": {"rang": 4, "points": 68},
-    "Clermont": {"rang": 5, "points": 63},
-    "Castres": {"rang": 6, "points": 63},
-    "La Rochelle": {"rang": 7, "points": 62},
-    "Pau": {"rang": 8, "points": 61},
-    "Montpellier": {"rang": 9, "points": 56},
-    "Racing 92": {"rang": 10, "points": 56},
-    "Lyon": {"rang": 11, "points": 50},
-    "Stade francais": {"rang": 12, "points": 45},
-    "Perpignan": {"rang": 13, "points": 44},
-    "Montauban": {"rang": 14, "points": 36}
+    "Pau": {"rang": 1, "points": 35},
+    "Toulouse": {"rang": 2, "points": 35},
+    "Bordeaux-Begles": {"rang": 3, "points": 31},
+    "Toulon": {"rang": 4, "points": 29},
+    "Stade francais": {"rang": 5, "points": 27},
+    "Montpellier": {"rang": 6, "points": 25},
+    "La Rochelle": {"rang": 7, "points": 24},
+    "Bayonne": {"rang": 8, "points": 23},
+    "Castres": {"rang": 9, "points": 22},
+    "Racing 92": {"rang": 10, "points": 21},
+    "Clermont": {"rang": 11, "points": 20},
+    "Lyon": {"rang": 12, "points": 18},
+    "Montauban": {"rang": 13, "points": 12},
+    "Perpignan": {"rang": 14, "points": 10}
   }
 }
 ```

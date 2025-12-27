@@ -153,7 +153,8 @@ def main():
                 df_clean = df[cols_finales]
                 
                 # Sauvegarde du fichier global
-                fichier_global = "joueurs_lagrandemelee_complet.csv"
+                fichier_global = os.path.join(os.path.dirname(__file__), "output", "joueurs_lagrandemelee_complet.csv")
+                os.makedirs(os.path.dirname(fichier_global), exist_ok=True)
                 df_clean.to_csv(fichier_global, index=False, sep=";", encoding="utf-8-sig")
                 print(f"[OK] Fichier global sauvegarde : {fichier_global}")
                 

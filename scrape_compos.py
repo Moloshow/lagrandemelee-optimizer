@@ -164,8 +164,10 @@ def normaliser_club(club):
     return mapping.get(club, club.title())
 
 
-def charger_joueurs_fantasy(csv_path="joueurs_lagrandemelee_complet.csv"):
+def charger_joueurs_fantasy(csv_path=None):
     """Charge le CSV des joueurs Fantasy et prepare le matching."""
+    if csv_path is None:
+        csv_path = os.path.join(os.path.dirname(__file__), "output", "joueurs_lagrandemelee_complet.csv")
     print(f"Chargement du CSV Fantasy : {csv_path}")
     
     if not os.path.exists(csv_path):
@@ -254,8 +256,11 @@ def enrichir_avec_compos(df, compos, clubs_avec_compos):
     return df
 
 
-def sauvegarder_csv_enrichi(df, fichier="joueurs_enrichis.csv"):
+def sauvegarder_csv_enrichi(df, fichier=None):
     """Sauvegarde le CSV enrichi."""
+    if fichier is None:
+        fichier = os.path.join(os.path.dirname(__file__), "output", "joueurs_enrichis.csv")
+    os.makedirs(os.path.dirname(fichier), exist_ok=True)
     df.to_csv(fichier, index=False, sep=";", encoding="utf-8-sig")
     print(f"[OK] CSV enrichi sauvegarde : {fichier}")
 

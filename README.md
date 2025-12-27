@@ -121,14 +121,15 @@ python main.py --skip-scrape --inclure-remplacants
 | `.env.example` | Template pour les credentials |
 | `classement_top14.json` | Classement et forme des equipes (non versionne) |
 
-### Fichiers generes
+### Fichiers generes (dans `output/`)
 
 | Fichier | Description |
 |---------|-------------|
-| `joueurs_lagrandemelee_complet.csv` | Tous les joueurs avec stats |
-| `joueurs_enrichis.csv` | Joueurs avec statut de composition |
-| `joueurs_avec_score.csv` | Joueurs avec score predictif |
-| `ma_composition.csv` | Composition optimale (18 joueurs) |
+| `output/joueurs_lagrandemelee_complet.csv` | Tous les joueurs avec stats |
+| `output/joueurs_enrichis.csv` | Joueurs avec statut de composition |
+| `output/joueurs_avec_score.csv` | Joueurs avec score predictif |
+| `output/classement_top14.json` | Classement et forme des equipes |
+| `output/ma_composition.csv` | Composition optimale (18 joueurs) |
 
 ---
 

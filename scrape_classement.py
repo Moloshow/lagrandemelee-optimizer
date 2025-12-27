@@ -156,8 +156,12 @@ def creer_classement_manuel():
     }
 
 
-def sauvegarder_classement(classement, fichier="classement_top14.json"):
+def sauvegarder_classement(classement, fichier=None):
     """Sauvegarde le classement dans un fichier JSON."""
+    if fichier is None:
+        fichier = os.path.join(os.path.dirname(__file__), "output", "classement_top14.json")
+    os.makedirs(os.path.dirname(fichier), exist_ok=True)
+    
     data = {
         "date_maj": datetime.now().strftime("%Y-%m-%d"),
         "source": "API La Grande Melee",

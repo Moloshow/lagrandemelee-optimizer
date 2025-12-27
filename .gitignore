@@ -7,12 +7,9 @@ __pycache__/
 *.egg-info/
 .eggs/
 
-# Données générées (contiennent des données sensibles/personnelles)
-*.csv
+# Donnees generees
+output/
 joueurs_par_role/
-
-# Fichier de classement (mis à jour manuellement chaque journée)
-classement_top14.json
 
 # Environnement et credentials
 .env

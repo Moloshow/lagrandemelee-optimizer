@@ -12,10 +12,11 @@ import pandas as pd
 import argparse
 from itertools import combinations
 import json
+import os
 
 # --- CONFIGURATION ---
-FICHIER_JOUEURS = "joueurs_avec_score.csv"
-FICHIER_COMPOS = "joueurs_enrichis.csv"  # Avec statut_compo si dispo
+FICHIER_JOUEURS = os.path.join(os.path.dirname(__file__), "output", "joueurs_avec_score.csv")
+FICHIER_COMPOS = os.path.join(os.path.dirname(__file__), "output", "joueurs_enrichis.csv")  # Avec statut_compo si dispo
 
 # Composition d'equipe Fantasy (15 titulaires + 3 remplacants Fantasy)
 # Regles exactes de "La Grande Melee"
@@ -297,8 +298,12 @@ def afficher_composition(df_titulaires, df_remplacants, budget_initial):
     print("=" * 70)
 
 
-def sauvegarder_composition(df_titulaires, df_remplacants, fichier="ma_composition.csv"):
+def sauvegarder_composition(df_titulaires, df_remplacants, fichier=None):
     """Sauvegarde la composition complete dans un fichier."""
+    if fichier is None:
+        fichier = os.path.join(os.path.dirname(__file__), "output", "ma_composition.csv")
+    os.makedirs(os.path.dirname(fichier), exist_ok=True)
+    
     df_tit = df_titulaires.copy()
     df_tit['role_fantasy'] = 'titulaire'
     
@@ -329,7 +334,7 @@ def main():
     parser.add_argument('--budget', type=float, default=300, help='Budget en millions (defaut: 300)')
     parser.add_argument('--remplacants', action='store_true', help='Inclure les remplacants reels dans la pool de joueurs')
     parser.add_argument('--iterations', type=int, default=500, help='Nb iterations optimisation (defaut: 500)')
-    parser.add_argument('--output', type=str, default='ma_composition.csv', help='Fichier de sortie')
+    parser.add_argument('--output', type=str, default=None, help='Fichier de sortie')
     
     args = parser.parse_args()
     

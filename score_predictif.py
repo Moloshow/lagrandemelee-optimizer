@@ -12,9 +12,9 @@ import json
 import os
 
 # --- CONFIGURATION ---
-FICHIER_JOUEURS = "joueurs_lagrandemelee_complet.csv"
-FICHIER_CLASSEMENT = "classement_top14.json"
-FICHIER_SORTIE = "joueurs_avec_score.csv"
+FICHIER_JOUEURS = os.path.join(os.path.dirname(__file__), "output", "joueurs_lagrandemelee_complet.csv")
+FICHIER_CLASSEMENT = os.path.join(os.path.dirname(__file__), "output", "classement_top14.json")
+FICHIER_SORTIE = os.path.join(os.path.dirname(__file__), "output", "joueurs_avec_score.csv")
 
 # Bonus/Malus pour le score predictif
 BONUS_DOMICILE = 1.20     # +20% a domicile

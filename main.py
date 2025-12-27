@@ -131,12 +131,12 @@ def main():
     print("\n" + "=" * 60)
     print("[OK] PIPELINE TERMINE AVEC SUCCES !")
     print("=" * 60)
-    print("\nFichiers generes:")
-    print("   - joueurs_lagrandemelee_complet.csv - Tous les joueurs")
-    print("   - joueurs_enrichis.csv - Joueurs avec statut compo")
-    print("   - joueurs_avec_score.csv - Joueurs avec score predictif")
-    print("   - ma_composition.csv - Composition optimale (18 joueurs)")
-    print("\nProchaine etape: Ouvre ma_composition.csv pour voir ta composition !")
+    print("\nFichiers generes dans output/:")
+    print("   - output/joueurs_lagrandemelee_complet.csv - Tous les joueurs")
+    print("   - output/joueurs_enrichis.csv - Joueurs avec statut compo")
+    print("   - output/joueurs_avec_score.csv - Joueurs avec score predictif")
+    print("   - output/ma_composition.csv - Composition optimale (18 joueurs)")
+    print("\nProchaine etape: Ouvre output/ma_composition.csv pour voir ta composition !")
     
     return 0
 

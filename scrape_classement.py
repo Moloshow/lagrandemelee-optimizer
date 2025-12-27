@@ -5,7 +5,6 @@ Recupere la forme des equipes depuis l'API La Grande Melee
 """
 
 import requests
-from bs4 import BeautifulSoup
 import json
 from datetime import datetime
 import re
@@ -38,7 +37,7 @@ def normaliser_nom_club(nom):
         "union bordeaux begles": "Bordeaux-Begles",
         "bordeaux begles": "Bordeaux-Begles",
         "bordeaux-begles": "Bordeaux-Begles",
-        "bordeaux bègles": "Bordeaux-Begles",
+        "bordeaux-bègles": "Bordeaux-Begles",
         "ubb": "Bordeaux-Begles",
         "rc toulon": "Toulon",
         "toulon": "Toulon",
@@ -72,96 +71,88 @@ def normaliser_nom_club(nom):
     }
     
     nom_lower = nom.lower().strip()
-    nom_lower = re.sub(r'[^\w\s]', '', nom_lower)
+    nom_lower = re.sub(r'[^\w\s-]', '', nom_lower)
     
     return mapping.get(nom_lower, nom.title())
 
 
-def scraper_calendrier_lgm(env_vars):
+def scraper_forme_equipes_lgm(env_vars, journee=13):
     """
-    Scrape le calendrier et la forme des equipes depuis l'API La Grande Melee.
+    Scrape la forme des equipes depuis l'API La Grande Melee.
+    Endpoint: /v1/private/journeecalendrier/{journee}?lg=fr
     Retourne un dict {club_normalise: forme_str} ex: {"Toulouse": "G,G,G,G,G"}
     """
     if not env_vars:
         print("[WARN] Pas de credentials .env pour l'API LGM")
         return {}
     
-    # L'API du calendrier (endpoint a tester)
-    urls_to_try = [
-        "https://lagrandemelee.midi-olympique.fr/v1/private/calendrier?lg=fr",
-        "https://lagrandemelee.midi-olympique.fr/v1/private/journees?lg=fr",
-        "https://lagrandemelee.midi-olympique.fr/v1/private/matchs?lg=fr",
-    ]
+    url = f"https://lagrandemelee.midi-olympique.fr/v1/private/journeecalendrier/{journee}?lg=fr"
     
     headers = {
         "accept": "application/json",
         "authorization": env_vars.get('API_AUTH_TOKEN', ''),
         "cookie": env_vars.get('API_COOKIES', ''),
-        "x-access-key": env_vars.get('API_ACCESS_KEY', '')
+        "x-access-key": env_vars.get('API_ACCESS_KEY', ''),
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
     
-    for url in urls_to_try:
-        try:
-            response = requests.get(url, headers=headers, timeout=15)
-            if response.status_code == 200:
-                data = response.json()
-                print(f"[OK] API calendrier trouvee: {url}")
-                # Analyser la reponse pour extraire la forme
-                # (La structure exacte depend de l'API)
-                return extraire_forme_depuis_api(data)
-        except:
-            continue
-    
-    print("[WARN] API calendrier non trouvee, utilisation des donnees manuelles")
-    return {}
-
-
-def extraire_forme_depuis_api(data):
-    """Extrait la forme des equipes depuis les donnees de l'API."""
-    formes = {}
-    
-    # Essayer differentes structures possibles
-    if isinstance(data, dict):
-        # Chercher des cles comme 'matchs', 'journees', 'calendrier'
-        for key in ['matchs', 'journees', 'calendrier', 'rencontres']:
-            if key in data:
-                items = data[key]
-                if isinstance(items, list):
-                    for item in items:
-                        # Extraire info equipe et forme
-                        for club_key in ['equipe', 'club', 'dom', 'ext']:
-                            if club_key in item:
-                                club_data = item[club_key]
-                                if isinstance(club_data, dict):
-                                    nom = club_data.get('nom', '')
-                                    forme = club_data.get('forme', '')
-                                    if nom and forme:
-                                        formes[normaliser_nom_club(nom)] = forme
-    
-    return formes
+    try:
+        response = requests.get(url, headers=headers, timeout=15)
+        response.raise_for_status()
+        data = response.json()
+        
+        formes = {}
+        
+        if 'journee' in data and 'matchs' in data['journee']:
+            matchs = data['journee']['matchs']
+            
+            for match in matchs:
+                # Equipe domicile
+                club_dom = match.get('clubdom', '')
+                forme_dom = match.get('formeclubdom', [])
+                if club_dom and forme_dom:
+                    club_norm = normaliser_nom_club(club_dom)
+                    formes[club_norm] = ','.join(forme_dom)
+                
+                # Equipe exterieur
+                club_ext = match.get('clubext', '')
+                forme_ext = match.get('formeclubext', [])
+                if club_ext and forme_ext:
+                    club_norm = normaliser_nom_club(club_ext)
+                    formes[club_norm] = ','.join(forme_ext)
+        
+        if formes:
+            print(f"[OK] Forme recuperee pour {len(formes)} equipes via API LGM")
+        
+        return formes
+        
+    except requests.exceptions.RequestException as e:
+        print(f"[WARN] Erreur API calendrier: {e}")
+        return {}
+    except Exception as e:
+        print(f"[WARN] Erreur parsing calendrier: {e}")
+        return {}
 
 
 def creer_classement_manuel():
     """Cree un classement manuel avec les dernieres donnees connues.
     Classement Top 14 2025-2026 - Journee 13 (decembre 2025)
-    forme = 5 derniers resultats (G=Gagne, N=Nul, P=Perdu) du plus ancien au plus recent
-    Donnees extraites de La Grande Melee
     """
     return {
-        "Pau": {"rang": 1, "points": 35, "forme": "P,G,G,G,G"},
-        "Toulouse": {"rang": 2, "points": 35, "forme": "G,G,G,G,G"},
-        "Bordeaux-Begles": {"rang": 3, "points": 31, "forme": "G,G,P,P,G"},
-        "Toulon": {"rang": 4, "points": 29, "forme": "G,G,P,G,P"},
-        "Stade francais": {"rang": 5, "points": 27, "forme": "G,P,G,P,N"},
-        "Montpellier": {"rang": 6, "points": 25, "forme": "P,P,G,G,G"},
-        "La Rochelle": {"rang": 7, "points": 24, "forme": "G,P,P,P,G"},
-        "Bayonne": {"rang": 8, "points": 23, "forme": "P,G,P,G,P"},
-        "Castres": {"rang": 9, "points": 22, "forme": "P,P,G,G,P"},
-        "Racing 92": {"rang": 10, "points": 21, "forme": "G,P,G,P,N"},
-        "Clermont": {"rang": 11, "points": 20, "forme": "G,G,P,G,P"},
-        "Lyon": {"rang": 12, "points": 18, "forme": "P,P,G,P,P"},
-        "Montauban": {"rang": 13, "points": 12, "forme": "G,P,P,P,P"},
-        "Perpignan": {"rang": 14, "points": 10, "forme": "P,P,P,P,G"},
+        "Pau": {"rang": 1, "points": 35},
+        "Toulouse": {"rang": 2, "points": 35},
+        "Bordeaux-Begles": {"rang": 3, "points": 31},
+        "Toulon": {"rang": 4, "points": 29},
+        "Stade francais": {"rang": 5, "points": 27},
+        "Montpellier": {"rang": 6, "points": 25},
+        "La Rochelle": {"rang": 7, "points": 24},
+        "Bayonne": {"rang": 8, "points": 23},
+        "Castres": {"rang": 9, "points": 22},
+        "Racing 92": {"rang": 10, "points": 21},
+        "Clermont": {"rang": 11, "points": 20},
+        "Lyon": {"rang": 12, "points": 18},
+        "Montauban": {"rang": 13, "points": 12},
+        "Perpignan": {"rang": 14, "points": 10},
     }
 
 
@@ -169,7 +160,7 @@ def sauvegarder_classement(classement, fichier="classement_top14.json"):
     """Sauvegarde le classement dans un fichier JSON."""
     data = {
         "date_maj": datetime.now().strftime("%Y-%m-%d"),
-        "source": "La Grande Melee / manuel",
+        "source": "API La Grande Melee",
         "classement": classement
     }
     
@@ -191,21 +182,43 @@ def main():
     classement = creer_classement_manuel()
     print(f"[OK] {len(classement)} equipes chargees")
     
-    # Essayer de recuperer la forme depuis l'API LGM
+    # Recuperer la forme depuis l'API LGM
     if env_vars:
-        print("\nTentative de recuperation de la forme depuis l'API...")
-        formes_api = scraper_calendrier_lgm(env_vars)
+        print("\nRecuperation de la forme des equipes via API LGM...")
+        formes_api = scraper_forme_equipes_lgm(env_vars, journee=13)
         
         if formes_api:
-            print(f"[OK] Forme recuperee pour {len(formes_api)} equipes")
             # Mettre a jour le classement avec les formes de l'API
             for club, forme in formes_api.items():
                 if club in classement:
                     classement[club]['forme'] = forme
+                else:
+                    # Club trouve mais pas dans le classement de base
+                    print(f"   [INFO] Club trouve dans API mais pas dans classement: {club}")
         else:
-            print("[INFO] Utilisation des formes manuelles")
+            print("[WARN] API non disponible, utilisation des formes par defaut")
+            # Ajouter des formes par defaut
+            formes_defaut = {
+                "Pau": "P,G,G,G,G",
+                "Toulouse": "G,G,G,G,G",
+                "Bordeaux-Begles": "G,G,P,P,G",
+                "Toulon": "G,G,P,G,P",
+                "Stade francais": "G,P,G,P,N",
+                "Montpellier": "P,P,G,G,G",
+                "La Rochelle": "G,P,P,P,G",
+                "Bayonne": "P,G,P,G,P",
+                "Castres": "P,P,G,G,P",
+                "Racing 92": "G,P,G,P,N",
+                "Clermont": "G,G,P,G,P",
+                "Lyon": "P,P,G,P,P",
+                "Montauban": "G,P,P,P,P",
+                "Perpignan": "P,P,P,P,G",
+            }
+            for club, forme in formes_defaut.items():
+                if club in classement:
+                    classement[club]['forme'] = forme
     else:
-        print("[WARN] Pas de .env, utilisation des donnees manuelles")
+        print("[WARN] Pas de .env, utilisation des donnees par defaut")
     
     # Afficher le classement avec forme
     print("\nCLASSEMENT ET FORME:")

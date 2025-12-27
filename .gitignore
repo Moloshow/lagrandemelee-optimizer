@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+
+# Données générées (contiennent des données sensibles/personnelles)
+*.csv
+joueurs_par_role/
+
+# Fichier de classement (mis à jour manuellement chaque journée)
+classement_top14.json
+
+# Environnement et credentials
+.env
+.venv/
+env/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
